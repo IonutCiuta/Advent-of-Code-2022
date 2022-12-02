@@ -1,4 +1,4 @@
-package com.ionutciuta.day01;
+package com.ionutciuta.puzzles;
 
 public interface PuzzleTest {
     void shouldReturnExpectedTestResult_part1();
