@@ -14,7 +14,7 @@ public class Puzzle01 extends Puzzle<Integer> {
         var file = new File(inputFile);
         int max = 0;
         int current = 0;
-        try (LineIterator it = FileUtils.lineIterator(file);) {
+        try (var it = FileUtils.lineIterator(file)) {
             while (it.hasNext()) {
                 String line = it.nextLine();
 
@@ -26,7 +26,6 @@ public class Puzzle01 extends Puzzle<Integer> {
                 } else {
                     current += Integer.parseInt(line);
                 }
-
             }
         } catch (Exception e) {
             e.printStackTrace();
