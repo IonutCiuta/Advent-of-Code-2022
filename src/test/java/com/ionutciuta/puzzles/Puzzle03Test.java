@@ -16,16 +16,22 @@ public class Puzzle03Test implements PuzzleTest {
     @Test
     @Override
     public void shouldReturnResult_part1() {
-        System.out.println(puzzle.solvePart1());
+        final var result = puzzle.solvePart1();
+        System.out.println(result);
+        assertEquals(7716, result);
     }
 
+    @Test
     @Override
     public void shouldReturnExpectedTestResult_part2() {
-
+        assertEquals(70, puzzle.solvePart2ForTestInput());
     }
 
+    @Test
     @Override
     public void shouldReturnResult_part2() {
-        puzzle.solvePart2();
+        final var result = puzzle.solvePart2();
+        System.out.println(result);
+        assertEquals(2973, result);
     }
 }

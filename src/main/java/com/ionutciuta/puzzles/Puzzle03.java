@@ -21,7 +21,7 @@ public class Puzzle03 extends Puzzle<Integer> {
 
     @Override
     protected Integer solvePart1(String inputFile) {
-        var file = new File(inputFile);
+        final var file = new File(inputFile);
         var total = 0;
 
         try (var it = FileUtils.lineIterator(file)) {
@@ -38,7 +38,7 @@ public class Puzzle03 extends Puzzle<Integer> {
                 var commonItems = new HashSet<Character>();
                 for (int i = len / 2; i < len; i++) {
                     var item = items[i];
-                    if (firstCompartment.contains(item) && !commonItems.contains(item)) {
+                    if (firstCompartment.contains(item)) {
                         commonItems.add(item);
                     }
                 }
@@ -56,6 +56,48 @@ public class Puzzle03 extends Puzzle<Integer> {
 
     @Override
     protected Integer solvePart2(String inputFile) {
-        return null;
+        final var file = new File(inputFile);
+        var total = 0;
+
+        try (var it = FileUtils.lineIterator(file)) {
+            int i = 0;
+            var itemCounter = new HashMap<Character, Integer>();
+            while (it.hasNext()) {
+                var line = it.nextLine();
+
+                if (i == 0) {
+                    for (char item : line.toCharArray()) {
+                        itemCounter.put(item, 1);
+                    }
+                    i++;
+                    continue;
+                }
+
+                if (i == 1) {
+                    for (char item : line.toCharArray()) {
+                        if (itemCounter.containsKey(item)) {
+                            itemCounter.put(item, 2);
+                        }
+                    }
+                    i++;
+                    continue;
+                }
+
+                if (i == 2) {
+                    for (char item : line.toCharArray()) {
+                        if (itemCounter.containsKey(item) && itemCounter.get(item) == 2) {
+                            total += itemsValue.get(item);
+                            break;
+                        }
+                    }
+                    i = 0;
+                    itemCounter.clear();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return total;
     }
 }
