@@ -1,22 +1,145 @@
 package com.ionutciuta.puzzles;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.LineIterator;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BiFunction;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
-public class Puzzle07 extends Puzzle<Integer> {
+public class Puzzle07 extends Puzzle<Long> {
+
+    @Override
+    public Long solvePart1(String inputFile) {
+        final var file = new File(inputFile);
+        var result = 0L;
+
+        final var deleteThreshold = 100000L;
+
+        try (var it = FileUtils.lineIterator(file)) {
+            final var rootDir = parseFromFile(it);
+            rootDir.computeSize();
+
+            var set = findDirectoriesSmallerThanThreshold(rootDir, deleteThreshold);
+            result = set.stream()
+                    .map(folder -> folder.size)
+                    .reduce(Long::sum).get();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    private Set<MyFolder> findDirectoriesSmallerThanThreshold(MyFolder root, long threshold) {
+        final var result = new HashSet<MyFolder>();
+        findDirectoriesSmallerThanThreshold(root, threshold, result);
+        return result;
+    }
+
+    private void findDirectoriesSmallerThanThreshold(MyFolder root, long threshold, Set<MyFolder> result) {
+        for (FsObject fsObject : root.nodes.values()) {
+            if (fsObject instanceof MyFolder folder) {
+                if (folder.size <= threshold) {
+                    result.add(folder);
+                }
+                findDirectoriesSmallerThanThreshold(folder, threshold, result);
+            }
+        }
+    }
+
+    @Override
+    protected Long solvePart2(String inputFile) {
+        final var file = new File(inputFile);
+        var result = 0L;
+
+        final var totalMemory = 70000000;
+        final var updateSize = 30000000;
+
+        try (var it = FileUtils.lineIterator(file)) {
+            final var rootDir = parseFromFile(it);
+            rootDir.computeSize();
+
+            final var availableMemory = totalMemory - rootDir.size;
+            final var requiredSpace = updateSize - availableMemory;
+
+            final var set = findDirectoriesGreaterThanThreshold(rootDir, requiredSpace);
+            result = set.stream()
+                    .map(folder -> folder.size)
+                    .min(Long::compare)
+                    .get();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    private Set<MyFolder> findDirectoriesGreaterThanThreshold(MyFolder root, long threshold) {
+        final var result = new HashSet<MyFolder>();
+        findDirectoriesGreaterThanThreshold(root, threshold, result);
+        return result;
+    }
+
+    private void findDirectoriesGreaterThanThreshold(MyFolder root, long threshold, Set<MyFolder> result) {
+        for (FsObject fsObject : root.nodes.values()) {
+            if (fsObject instanceof MyFolder folder) {
+                if (folder.size >= threshold) {
+                    result.add(folder);
+                }
+                findDirectoriesGreaterThanThreshold(folder, threshold, result);
+            }
+        }
+    }
+
+    protected MyFolder parseFromFile(LineIterator it) {
+        final var rootDir = new MyFolder("/");
+        var currentDir = rootDir;
+        while (it.hasNext()) {
+            var line = it.nextLine();
+
+            if (line.startsWith("$ cd /")) {
+                currentDir = rootDir;
+                continue;
+            }
+
+            if (line.startsWith("$ cd ..")) {
+                currentDir = currentDir.parent;
+                continue;
+            }
+
+            if (line.startsWith("$ cd ")) {
+                var dirName = line.split("\\$ cd ")[1];
+                currentDir = (MyFolder) currentDir.nodes.get(dirName);
+                continue;
+            }
+
+            if (line.startsWith("$ ls")) {
+                continue;
+            }
+
+            if (line.startsWith("dir")) {
+                var dirName = line.split(" ")[1];
+                var dir = new MyFolder(dirName, currentDir);
+                currentDir.addNode(dir);
+            } else {
+                var fileLineParts = line.split(" ");
+                var size = Long.parseLong(fileLineParts[0]);
+                var name = fileLineParts[1];
+                var newFile = new MyFile(name, size, currentDir);
+                currentDir.addNode(newFile);
+            }
+        }
+        return rootDir;
+    }
 
     abstract class FsObject {
         String name;
-        Long size = 0L;
-        List<FsObject> nodes;
+        Long size;
+        Map<String, FsObject> nodes;
         MyFolder parent;
 
-
-        public FsObject(String name, Long size, MyFolder parent, List<FsObject> nodes) {
+        public FsObject(String name, Long size, MyFolder parent, Map<String, FsObject> nodes) {
             this.name = name;
             this.size = size;
             this.nodes = nodes;
@@ -27,108 +150,40 @@ public class Puzzle07 extends Puzzle<Integer> {
             return nodes != null;
         }
 
-        public void setParent(MyFolder parent) {
-            this.parent = parent;
-        }
-
         void addNode(FsObject fsObject) {
             if (isFolder()) {
-                nodes.add(fsObject);
+                nodes.put(fsObject.name, fsObject);
             } else {
                 throw new UnsupportedOperationException(name + " is file!");
             }
         }
 
         long computeSize() {
-            if (!isFolder()) {
-                return size;
-            } else {
-                var size = nodes.stream().map(FsObject::computeSize).reduce((Long::sum)).get();
-                this.size = size;
-                return size;
+            if (isFolder()) {
+                var opt = nodes.values().stream().map(FsObject::computeSize).reduce((Long::sum));
+                if (opt.isEmpty()) {
+                    this.size = 0L;
+                } else {
+                    this.size = opt.get();
+                }
             }
+            return size;
         }
     }
 
     class MyFolder extends FsObject {
-        public MyFolder(String name) {
-            super(name, 0L, null, new ArrayList<>());
+        MyFolder(String name) {
+            super(name, 0L, null, new HashMap<>());
         }
 
-        public MyFolder(String name, MyFolder parent) {
-            super(name, 0L, parent, new ArrayList<>());
+        MyFolder(String name, MyFolder parent) {
+            super(name, 0L, parent, new HashMap<>());
         }
     }
 
     class MyFile extends FsObject {
-        public MyFile(String name, Long size, MyFolder parent) {
+        MyFile(String name, Long size, MyFolder parent) {
             super(name, size, parent, null);
         }
-    }
-
-    @Override
-    public Integer solvePart1(String inputFile) {
-        var file = new File(inputFile);
-        var result = 0;
-
-        final var deleteThreshold = 100000L;
-
-        var rootDir = new MyFolder("/");
-        var currentDir = rootDir;
-
-        try (var it = FileUtils.lineIterator(file)) {
-            while (it.hasNext()) {
-                var line = it.nextLine();
-
-                if (line.startsWith("$ cd /")) {
-                    currentDir = rootDir;
-                    continue;
-                }
-
-                if (line.startsWith("$ cd ..")) {
-                    currentDir = currentDir.parent;
-                    continue;
-                }
-
-                if (line.startsWith("$ ls")) {
-                    continue;
-                }
-
-                if (line.startsWith("dir")) {
-                    var dirName = line.split(" ")[1];
-                    var dir = new MyFolder(dirName, currentDir);
-                    currentDir.addNode(dir);
-                } else {
-                    var fileLineParts = line.split(" ");
-                    var size = Long.parseLong(fileLineParts[0]);
-                    var name = fileLineParts[1];
-                    var newFile = new MyFile(name, size, currentDir);
-                    currentDir.addNode(newFile);
-                }
-            }
-
-            rootDir.computeSize();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return result;
-    }
-
-    int searchSmallDirs(int threshold, MyFolder folder) {
-        if (folder.nodes.isEmpty()) {
-            return 0;
-        }
-    }
-
-    @Override
-    protected Integer solvePart2(String inputFile) {
-        var file = new File(inputFile);
-        var result = 0;
-        try (var it = FileUtils.lineIterator(file)) {
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return result;
     }
 }
