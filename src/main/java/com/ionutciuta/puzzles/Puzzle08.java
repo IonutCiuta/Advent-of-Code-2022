@@ -76,56 +76,32 @@ public class Puzzle08 extends Puzzle<Integer> {
 
                 var visibleOnTheLeft = 0;
                 for (var left = j - 1; left >= 0; left--) {
+                    visibleOnTheLeft += 1;
                     if (row[left] >= tree) {
-                        visibleOnTheLeft += 1;
-                        break;
-                    }
-
-                    if (row[left] < tree) {
-                        visibleOnTheLeft += 1;
-                    } else {
                         break;
                     }
                 }
 
                 var visibleOnTheRight = 0;
                 for (var right = j + 1; right < row.length; right++) {
+                    visibleOnTheRight += 1;
                     if (row[right] >= tree) {
-                        visibleOnTheRight += 1;
-                        break;
-                    }
-
-                    if (row[right] < tree) {
-                        visibleOnTheRight += 1;
-                    } else {
                         break;
                     }
                 }
 
                 var visibleFromTheTop = 0;
                 for (var top = i - 1; top >= 0; top--) {
+                    visibleFromTheTop += 1;
                     if (forest[top][j] >= tree) {
-                        visibleFromTheTop += 1;
-                        break;
-                    }
-
-                    if (forest[top][j] < tree) {
-                        visibleFromTheTop += 1;
-                    } else {
                         break;
                     }
                 }
 
                 var visibleFromTheBottom = 0;
                 for (var bottom = i + 1; bottom < forest.length; bottom++) {
+                    visibleFromTheBottom += 1;
                     if (forest[bottom][j] >= tree) {
-                        visibleFromTheBottom += 1;
-                        break;
-                    }
-
-                    if (forest[bottom][j] < tree) {
-                        visibleFromTheBottom += 1;
-                    } else {
                         break;
                     }
                 }

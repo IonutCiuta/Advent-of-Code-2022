@@ -34,6 +34,6 @@ class Puzzle08Test implements PuzzleTest {
     public void shouldReturnResult_part2() {
         final var result = puzzle.solvePart2();
         System.out.println(result);
-        assertEquals(0, result);
+        assertEquals(671160, result);
     }
 }
