@@ -16,25 +16,24 @@ public class Puzzle07 extends Puzzle<Long> {
         final var file = new File(inputFile);
         var result = 0L;
 
-        final var deleteThreshold = 100000L;
-
         try (var it = FileUtils.lineIterator(file)) {
             final var rootDir = parseFromFile(it);
             rootDir.computeSize();
 
-            var set = findDirectoriesSmallerThanThreshold(rootDir, deleteThreshold);
+            var set = findDirectoriesSmallerThanThreshold(rootDir);
             result = set.stream()
                     .map(folder -> folder.size)
-                    .reduce(Long::sum).get();
+                    .reduce(Long::sum)
+                    .orElse(0L);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return result;
     }
 
-    private Set<MyFolder> findDirectoriesSmallerThanThreshold(MyFolder root, long threshold) {
+    private Set<MyFolder> findDirectoriesSmallerThanThreshold(MyFolder root) {
         final var result = new HashSet<MyFolder>();
-        findDirectoriesSmallerThanThreshold(root, threshold, result);
+        findDirectoriesSmallerThanThreshold(root, 100000, result);
         return result;
     }
 
@@ -68,7 +67,7 @@ public class Puzzle07 extends Puzzle<Long> {
             result = set.stream()
                     .map(folder -> folder.size)
                     .min(Long::compare)
-                    .get();
+                    .orElse(0L);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -160,14 +159,14 @@ public class Puzzle07 extends Puzzle<Long> {
 
         long computeSize() {
             if (isFolder()) {
-                var opt = nodes.values().stream().map(FsObject::computeSize).reduce((Long::sum));
-                if (opt.isEmpty()) {
-                    this.size = 0L;
-                } else {
-                    this.size = opt.get();
-                }
+                this.size = nodes
+                        .values()
+                        .stream()
+                        .map(FsObject::computeSize)
+                        .reduce((Long::sum))
+                        .orElse(0L);
             }
-            return size;
+            return this.size;
         }
     }
 
