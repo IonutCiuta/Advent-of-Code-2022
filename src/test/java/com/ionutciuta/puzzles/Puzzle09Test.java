@@ -11,7 +11,7 @@ class Puzzle09Test implements PuzzleTest {
     @Override
     public void shouldReturnExpectedTestResult_part1() {
         final var result = puzzle.solvePart1ForTestInput();
-        assertEquals(0, result);
+        assertEquals(13, result);
     }
 
     @Test
@@ -19,7 +19,7 @@ class Puzzle09Test implements PuzzleTest {
     public void shouldReturnResult_part1() {
         final var result = puzzle.solvePart1();
         System.out.println(result);
-        assertEquals(0, result);
+        assertEquals(6522, result);
     }
 
     @Test

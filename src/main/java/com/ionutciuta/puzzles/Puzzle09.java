@@ -30,14 +30,13 @@ public class Puzzle09 extends Puzzle<Integer> {
 
                 if (direction.equals("R")) {
                     for (int i = 0; i < steps; i++) {
+                        var oldHeadY = headY;
+                        var oldHeadX = headX;
                         headY += 1;
-                        if (Math.abs(headY - tailY) > 1) {
-                            tailY++;
-                            if (Math.abs(headX - tailX) >= 1) {
-                                tailX += 1;
-                            } else if (headX < tailX) {
-                                tailX -= 1;
-                            }
+
+                        if (!isTailAdjacentToHead(tailX, tailY, headX, headY)) {
+                            tailY = oldHeadY;
+                            tailX = oldHeadX;
                         }
 
                         visit(visited, tailX, tailY);
@@ -47,14 +46,13 @@ public class Puzzle09 extends Puzzle<Integer> {
 
                 if (direction.equals("L")) {
                     for (int i = 0; i < steps; i++) {
+                        var oldHeadY = headY;
+                        var oldHeadX = headX;
                         headY -= 1;
-                        if (Math.abs(headY - tailY) > 1) {
-                            tailY--;
-                            if (Math.abs(headX - tailX) >= 1) {
-                                tailX += 1;
-                            } else if (headX < tailX) {
-                                tailX -= 1;
-                            }
+
+                        if (!isTailAdjacentToHead(tailX, tailY, headX, headY)) {
+                            tailY = oldHeadY;
+                            tailX = oldHeadX;
                         }
 
                         visit(visited, tailX, tailY);
@@ -64,15 +62,13 @@ public class Puzzle09 extends Puzzle<Integer> {
 
                 if (direction.equals("U")) {
                     for (int i = 0; i < steps; i++) {
+                        var oldHeadY = headY;
+                        var oldHeadX = headX;
                         headX += 1;
-                        if (Math.abs(headX - tailX) >= 1) {
-                            tailX++;
 
-                            if (Math.abs(headY - tailY) >= 1) {
-                                tailY += 1;
-                            } else if (headY < tailY) {
-                                tailY -= 1;
-                            }
+                        if (!isTailAdjacentToHead(tailX, tailY, headX, headY)) {
+                            tailY = oldHeadY;
+                            tailX = oldHeadX;
                         }
 
                         visit(visited, tailX, tailY);
@@ -82,15 +78,13 @@ public class Puzzle09 extends Puzzle<Integer> {
 
                 if (direction.equals("D")) {
                     for (int i = 0; i < steps; i++) {
+                        var oldHeadY = headY;
+                        var oldHeadX = headX;
                         headX -= 1;
-                        if (Math.abs(headX - tailX) > 1) {
-                            tailX--;
 
-                            if (Math.abs(headY - tailY) >= 1) {
-                                tailY += 1;
-                            } else if (headY < tailY) {
-                                tailY -= 1;
-                            }
+                        if (!isTailAdjacentToHead(tailX, tailY, headX, headY)) {
+                            tailY = oldHeadY;
+                            tailX = oldHeadX;
                         }
 
                         visit(visited, tailX, tailY);
@@ -109,6 +103,10 @@ public class Puzzle09 extends Puzzle<Integer> {
 
     private void visit(Set<String> visited, int x, int y) {
         visited.add(x + ":" + y);
+    }
+
+    private boolean isTailAdjacentToHead(int tailX, int tailY, int headX, int headY) {
+        return Math.abs(tailX - headX) <= 1 && Math.abs(tailY - headY) <= 1;
     }
 
     @Override
