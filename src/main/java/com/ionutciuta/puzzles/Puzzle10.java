@@ -53,12 +53,80 @@ public class Puzzle10 extends Puzzle<Integer> {
     @Override
     protected Integer solvePart2(String inputFile) {
         var file = new File(inputFile);
-        var result = 0;
-        try (var it = FileUtils.lineIterator(file)) {
 
+        var result = 0;
+        var cycle = 0;
+
+        final var screen = new Screen();
+        final var sprite = new Sprite();
+
+        try (var it = FileUtils.lineIterator(file)) {
+            while (it.hasNext()) {
+                final var cmd = it.nextLine();
+
+                if (cmd.startsWith("a")) {
+                    final var toAdd = Integer.parseInt(cmd.substring(5));
+                    for (int i = 0; i < 2; i++) {
+                        cycle += 1;
+                        screen.updateScreen(cycle, sprite);
+                    }
+                    sprite.updateSprite(toAdd);
+                } else {
+                    cycle += 1;
+                    screen.updateScreen(cycle, sprite);
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        screen.show();
         return result;
+    }
+
+    static class Sprite {
+        int left = 0, center = 1, right = 2;
+
+        void updateSprite(int value) {
+            center += value;
+            left = center - 1;
+            right = center + 1;
+        }
+    }
+
+    class Screen {
+        static final int ROWS = 6;
+        static final int PIXELS_PER_ROW = 40;
+        final char[][] pixels = new char[ROWS][PIXELS_PER_ROW];
+
+        void pixelOn(int x, int y) {
+            pixels[x][y] = '#';
+        }
+
+        void pixelOff(int x, int y) {
+            pixels[x][y] = '.';
+        }
+
+        void show() {
+            final var sb = new StringBuilder();
+            for (char[] row : pixels) {
+                for (char c : row) {
+                    sb.append(c);
+                }
+                sb.append('\n');
+            }
+            System.out.println(sb);
+        }
+
+        void updateScreen(int cycle, Sprite sprite) {
+            int pixelX = (cycle - 1) / PIXELS_PER_ROW;
+            int pixelY = Math.max((cycle - 1) % PIXELS_PER_ROW, 0);
+
+            if (pixelY == sprite.left || pixelY == sprite.center || pixelY == sprite.right) {
+                pixelOn(pixelX, pixelY);
+            } else {
+                pixelOff(pixelX, pixelY);
+            }
+        }
     }
 }
