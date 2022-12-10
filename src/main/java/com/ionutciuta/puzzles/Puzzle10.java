@@ -5,18 +5,19 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class Puzzle10 extends Puzzle<Integer> {
 
     @Override
     public Integer solvePart1(String inputFile) {
         var file = new File(inputFile);
-        var result = 0;
 
         var cycle = 0;
         var reg = 1;
 
         final var regValues = new HashMap<Integer, Integer>();
+        final var sampleCycles = Set.of(20, 60, 100, 140, 180, 220);
 
         try (var it = FileUtils.lineIterator(file)) {
             while (it.hasNext()) {
@@ -25,26 +26,15 @@ public class Puzzle10 extends Puzzle<Integer> {
                     final var toAdd = Integer.parseInt(cmd.substring(5));
                     for (int i = 0; i < 2; i++) {
                         cycle += 1;
-
-                        switch (cycle) {
-                            case 20 -> regValues.put(20, reg);
-                            case 60 -> regValues.put(60, reg);
-                            case 100 -> regValues.put(100, reg);
-                            case 140 -> regValues.put(140, reg);
-                            case 180 -> regValues.put(180, reg);
-                            case 220 -> regValues.put(220, reg);
+                        if (sampleCycles.contains(cycle)) {
+                            regValues.put(cycle, reg);
                         }
                     }
                     reg += toAdd;
                 } else {
                     cycle += 1;
-                    switch (cycle) {
-                        case 20 -> regValues.put(20, reg);
-                        case 60 -> regValues.put(60, reg);
-                        case 100 -> regValues.put(100, reg);
-                        case 140 -> regValues.put(140, reg);
-                        case 180 -> regValues.put(180, reg);
-                        case 220 -> regValues.put(220, reg);
+                    if (sampleCycles.contains(cycle)) {
+                        regValues.put(cycle, reg);
                     }
                 }
             }
