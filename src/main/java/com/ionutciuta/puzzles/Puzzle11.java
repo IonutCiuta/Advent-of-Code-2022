@@ -6,24 +6,50 @@ import java.io.File;
 import java.util.*;
 import java.util.function.Function;
 
-public class Puzzle11 extends Puzzle<Integer> {
+public class Puzzle11 extends Puzzle<Long> {
 
     @Override
-    public Integer solvePart1(String inputFile) {
+    public Long solvePart1(String inputFile) {
         final var file = new File(inputFile);
         final var monkeys = parseInput(file);
         System.out.println(monkeys);
 
-        for (int i = 0; i < 20; i++) {
+        doMonkeyBusiness(monkeys, 20, true, 3);
+
+        monkeys.sort(Comparator.comparingDouble(m -> m.rounds));
+        return monkeys.get(monkeys.size() - 1).rounds * monkeys.get(monkeys.size() - 2).rounds;
+    }
+
+    @Override
+    protected Long solvePart2(String inputFile) {
+        final var file = new File(inputFile);
+        final var monkeys = parseInput(file);
+        System.out.println(monkeys);
+
+        doMonkeyBusiness(monkeys, 1000, false, 0);
+
+        monkeys.sort(Comparator.comparingDouble(m -> m.rounds));
+        return monkeys.get(monkeys.size() - 1).rounds * monkeys.get(monkeys.size() - 2).rounds;
+    }
+
+    private void doMonkeyBusiness(List<Monkey> monkeys, int rounds, boolean divideWorryLevel, int worryLevelDiv) {
+        for (int i = 0; i < rounds; i++) {
             for (var monkey : monkeys) {
                 if (monkey.items.isEmpty()) {
                     continue;
                 }
                 for (int j = 0; j < monkey.items.size(); j++) {
                     monkey.rounds += 1;
-                    int currentItem = monkey.items.get(j);
-                    int newItem = monkey.operation.apply(currentItem);
-                    int worry = newItem / 3;
+                    long currentItem = monkey.items.get(j);
+                    long newItem = monkey.operation.apply(currentItem);
+
+                    long worry;
+                    if (divideWorryLevel) {
+                        worry = newItem / worryLevelDiv;
+                    } else {
+                        worry = newItem;
+                    }
+
                     if (worry % monkey.divBy == 0) {
                         monkeys.get(monkey.trueNextMonkeyId).items.addLast(worry);
                     } else {
@@ -33,27 +59,16 @@ public class Puzzle11 extends Puzzle<Integer> {
                 monkey.items.clear();
             }
         }
-
-        monkeys.sort(Comparator.comparingInt(m -> m.rounds));
-        return monkeys.get(monkeys.size() - 1).rounds * monkeys.get(monkeys.size() - 2).rounds;
-    }
-
-    @Override
-    protected Integer solvePart2(String inputFile) {
-        final var file = new File(inputFile);
-        var result = 0;
-
-        return result;
     }
 
     class Monkey {
         int id;
-        int divBy;
-        LinkedList<Integer> items = new LinkedList<>();
-        Function<Integer, Integer> operation;
+        long divBy;
+        LinkedList<Long> items = new LinkedList<>();
+        Function<Long, Long> operation;
         int trueNextMonkeyId;
         int falseNextMoneyId;
-        int rounds = 0;
+        long rounds = 0L;
 
         public Monkey(int id) {
             this.id = id;
@@ -97,7 +112,7 @@ public class Puzzle11 extends Puzzle<Integer> {
                 if (line.startsWith("Start")) {
                     var items = line.substring(16).split(", ");
                     for (var item : items) {
-                        monkey.items.add(Integer.parseInt(item));
+                        monkey.items.add(Long.parseLong(item));
                     }
                     continue;
                 }
@@ -109,7 +124,7 @@ public class Puzzle11 extends Puzzle<Integer> {
                         if (toAdd[1].equals("old")) {
                             monkey.operation = old -> old + old;
                         } else {
-                            monkey.operation = old -> old + Integer.parseInt(toAdd[1]);
+                            monkey.operation = old -> old + Long.parseLong(toAdd[1]);
                         }
                         continue;
                     }
@@ -117,29 +132,26 @@ public class Puzzle11 extends Puzzle<Integer> {
                     if (op.contains("*")) {
                         var toAdd = op.split(" \\* ");
                         if (toAdd[1].trim().equals("old")) {
-                            monkey.operation = (Integer old) -> old * old;
+                            monkey.operation = old -> old * old;
                         } else {
-                            monkey.operation = (Integer old) -> old * Integer.parseInt(toAdd[1]);
+                            monkey.operation = old -> old * Long.parseLong(toAdd[1]);
                         }
                         continue;
                     }
                 }
 
                 if (line.startsWith("Test")) {
-                    var divBy = Integer.parseInt(line.substring(19));
-                    monkey.divBy = divBy;
+                    monkey.divBy = Long.parseLong(line.substring(19));
                     continue;
                 }
 
                 if (line.startsWith("If true")) {
-                    var nextMonkey = Integer.parseInt(line.substring(25));
-                    monkey.trueNextMonkeyId = nextMonkey;
+                    monkey.trueNextMonkeyId = Integer.parseInt(line.substring(25));
                     continue;
                 }
 
                 if (line.startsWith("If false")) {
-                    var nextMonkey = Integer.parseInt(line.substring(26));
-                    monkey.falseNextMoneyId = nextMonkey;
+                    monkey.falseNextMoneyId = Integer.parseInt(line.substring(26));
                 }
             }
         } catch (Exception e) {
