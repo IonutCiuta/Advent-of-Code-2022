@@ -14,7 +14,7 @@ public class Puzzle11 extends Puzzle<Long> {
         final var monkeys = parseInput(file);
         System.out.println(monkeys);
 
-        doMonkeyBusiness(monkeys, 20, true, 3);
+        doMonkeyBusiness(monkeys, 20, true, 3, false, 1);
 
         monkeys.sort(Comparator.comparingDouble(m -> m.rounds));
         return monkeys.get(monkeys.size() - 1).rounds * monkeys.get(monkeys.size() - 2).rounds;
@@ -26,13 +26,19 @@ public class Puzzle11 extends Puzzle<Long> {
         final var monkeys = parseInput(file);
         System.out.println(monkeys);
 
-        doMonkeyBusiness(monkeys, 1000, false, 0);
+        final var worryLevelMod = monkeys.stream().map(m -> m.divBy).reduce((a, b) -> a * b).orElseThrow();
+        doMonkeyBusiness(monkeys, 10000, false, 1, true, worryLevelMod);
 
         monkeys.sort(Comparator.comparingDouble(m -> m.rounds));
         return monkeys.get(monkeys.size() - 1).rounds * monkeys.get(monkeys.size() - 2).rounds;
     }
 
-    private void doMonkeyBusiness(List<Monkey> monkeys, int rounds, boolean divideWorryLevel, int worryLevelDiv) {
+    private void doMonkeyBusiness(List<Monkey> monkeys,
+                                  int rounds,
+                                  boolean divideWorryLevel,
+                                  int worryLevelDiv,
+                                  boolean reduceWorryLevel,
+                                  long worryLevelMod) {
         for (int i = 0; i < rounds; i++) {
             for (var monkey : monkeys) {
                 if (monkey.items.isEmpty()) {
@@ -53,38 +59,15 @@ public class Puzzle11 extends Puzzle<Long> {
                     if (worry % monkey.divBy == 0) {
                         monkeys.get(monkey.trueNextMonkeyId).items.addLast(worry);
                     } else {
-                        monkeys.get(monkey.falseNextMoneyId).items.addLast(worry);
+                        if (reduceWorryLevel) {
+                            monkeys.get(monkey.falseNextMoneyId).items.addLast(worry % worryLevelMod);
+                        } else {
+                            monkeys.get(monkey.falseNextMoneyId).items.addLast(worry);
+                        }
                     }
                 }
                 monkey.items.clear();
             }
-        }
-    }
-
-    class Monkey {
-        int id;
-        long divBy;
-        LinkedList<Long> items = new LinkedList<>();
-        Function<Long, Long> operation;
-        int trueNextMonkeyId;
-        int falseNextMoneyId;
-        long rounds = 0L;
-
-        public Monkey(int id) {
-            this.id = id;
-        }
-
-        @Override
-        public String toString() {
-            return new StringJoiner(", ", Monkey.class.getSimpleName() + "[", "]")
-                    .add("id=" + id)
-                    .add("divBy=" + divBy)
-                    .add("items=" + items)
-                    .add("operation=" + operation)
-                    .add("trueNextMonkeyId=" + trueNextMonkeyId)
-                    .add("falseNextMoneyId=" + falseNextMoneyId)
-                    .add("rounds=" + rounds)
-                    .toString();
         }
     }
 
@@ -108,6 +91,8 @@ public class Puzzle11 extends Puzzle<Long> {
                     monkey = new Monkey(id);
                     continue;
                 }
+
+                assert monkey != null;
 
                 if (line.startsWith("Start")) {
                     var items = line.substring(16).split(", ");
@@ -159,5 +144,32 @@ public class Puzzle11 extends Puzzle<Long> {
         }
 
         return monkeys;
+    }
+
+    static class Monkey {
+        int id;
+        long divBy;
+        LinkedList<Long> items = new LinkedList<>();
+        Function<Long, Long> operation;
+        int trueNextMonkeyId;
+        int falseNextMoneyId;
+        long rounds = 0L;
+
+        public Monkey(int id) {
+            this.id = id;
+        }
+
+        @Override
+        public String toString() {
+            return new StringJoiner(", ", Monkey.class.getSimpleName() + "[", "]")
+                    .add("id=" + id)
+                    .add("divBy=" + divBy)
+                    .add("items=" + items)
+                    .add("operation=" + operation)
+                    .add("trueNextMonkeyId=" + trueNextMonkeyId)
+                    .add("falseNextMoneyId=" + falseNextMoneyId)
+                    .add("rounds=" + rounds)
+                    .toString();
+        }
     }
 }

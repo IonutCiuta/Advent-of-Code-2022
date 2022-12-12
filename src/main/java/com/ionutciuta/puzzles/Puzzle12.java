@@ -4,11 +4,11 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 
-public class Puzzle__DAY__ extends Puzzle<Integer> {
+public class Puzzle12 extends Puzzle<Integer> {
 
     @Override
     public Integer solvePart1(String inputFile) {
-        final var file = new File(inputFile);
+        var file = new File(inputFile);
         var result = 0;
         try (var it = FileUtils.lineIterator(file)) {
 
@@ -20,7 +20,7 @@ public class Puzzle__DAY__ extends Puzzle<Integer> {
 
     @Override
     protected Integer solvePart2(String inputFile) {
-        final var file = new File(inputFile);
+        var file = new File(inputFile);
         var result = 0;
         try (var it = FileUtils.lineIterator(file)) {
 
