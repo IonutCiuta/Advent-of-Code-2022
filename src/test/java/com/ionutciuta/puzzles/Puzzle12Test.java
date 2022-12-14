@@ -11,7 +11,7 @@ class Puzzle12Test implements PuzzleTest {
     @Override
     public void shouldReturnExpectedTestResult_part1() {
         final var result = puzzle.solvePart1ForTestInput();
-        assertEquals(0, result);
+        assertEquals(31, result);
     }
 
     @Test

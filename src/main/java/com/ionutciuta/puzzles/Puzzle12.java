@@ -3,12 +3,15 @@ package com.ionutciuta.puzzles;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class Puzzle12 extends Puzzle<Integer> {
-    final int END = 'E' - 'z';
+    private final List<Point> adjacentOffsets = List.of(
+            new Point(-1, 0, 0), // up
+            new Point(1, 0, 0),  // down
+            new Point(0, -1, 0), // left
+            new Point(0, 1, 0)   // right
+    );
 
     @Override
     public Integer solvePart1(String inputFile) {
@@ -16,59 +19,48 @@ public class Puzzle12 extends Puzzle<Integer> {
         final var map = readMap(file);
         final var results = new HashSet<Integer>();
         final var visited = new HashSet<String>();
-        findSignal(0, 0, 0, map, visited, results);
+
+        final var start = findStart(map);
+        final var next = new LinkedList<Point>();
+        next.add(start);
+
+        while (!next.isEmpty()) {
+            System.out.println(next);
+            final var point = next.removeFirst();
+
+            if (visited.contains(point.key())) {
+                continue;
+            }
+
+            for (var offset : adjacentOffsets) {
+                final var adjacent = point.offsetBy(offset);
+
+                if (!isValidAdjacentPoint(adjacent, map)) {
+                    continue;
+                }
+
+                if (map[point.x][point.y] == 'z' && map[adjacent.x][adjacent.y] == 'E') {
+                    results.add(adjacent.d);
+                    continue;
+                }
+
+                final var diff = Math.abs(map[point.x][point.y] - map[adjacent.x][adjacent.y]);
+                if (diff <= 1 || map[point.x][point.y] == 'S') {
+                    if (!visited.contains(adjacent.key())) {
+                        next.addLast(adjacent);
+                        visited.add(adjacent.key());
+                    }
+                }
+            }
+        }
+
         return results.stream().min(Integer::compareTo).orElse(-1);
     }
 
-    void findSignal(int x, int y, int len, char[][] map, Set<String> visited, Set<Integer> result) {
-        if (map[x][y] == 'E') {
-            result.add(len);
-            return;
-        }
-
-        // go down
-        if (x - 1 > 0 && Math.abs(map[x][y] - map[x - 1][y]) <= 1) {
-            if (visited.contains(keyOf(x - 1, y))) {
-                return;
-            }
-            var newVisited = new HashSet<>(visited);
-            newVisited.add(keyOf(x, y));
-            findSignal(x - 1, y, len + 1, map, newVisited, result);
-        }
-
-        // go up
-        if (x + 1 < map.length && Math.abs(map[x][y] - map[x + 1][y]) <= 1) {
-            if (visited.contains(keyOf(x + 1, y))) {
-                return;
-            }
-            var newVisited = new HashSet<>(visited);
-            newVisited.add(keyOf(x, y));
-            findSignal(x + 1, y, len + 1, map, newVisited, result);
-        }
-
-        // go left
-        if (y - 1 > 0 && Math.abs(map[x][y] - map[x][y - 1]) <= 1) {
-            if (visited.contains(keyOf(y - 1, y))) {
-                return;
-            }
-            var newVisited = new HashSet<>(visited);
-            newVisited.add(keyOf(x, y));
-            findSignal(x, y - 1, len + 1, map, newVisited, result);
-        }
-
-        // go right
-        if (y + 1 <= map[0].length && Math.abs(map[x][y] - map[x][y + 1]) <= 1) {
-            if (visited.contains(keyOf(y + 1, y))) {
-                return;
-            }
-            var newVisited = new HashSet<>(visited);
-            newVisited.add(keyOf(x, y));
-            findSignal(x, y + 1, len + 1, map, newVisited, result);
-        }
-    }
-
-    private String keyOf(int x, int y) {
-        return x + ":" + y;
+    boolean isValidAdjacentPoint(Point adjacent, char[][] map) {
+        var adjX = adjacent.x;
+        var adjY = adjacent.y;
+        return adjX >= 0 && adjX < map.length && adjY >= 0 && adjY < map[0].length;
     }
 
     @Override
@@ -102,6 +94,24 @@ public class Puzzle12 extends Puzzle<Integer> {
         return map;
     }
 
+    Point findStart(char[][] map) {
+        for (int i = 0; i < map.length; i++) {
+            for (int j = 0; j < map[i].length; j++) {
+                if (map[i][j] == 'S') {
+                    return new Point(i, j, 0);
+                }
+            }
+        }
+        throw new RuntimeException("Start not found.");
+    }
+
     record Point(int x, int y, int d) {
+        Point offsetBy(Point offset) {
+            return new Point(this.x + offset.x, this.y + offset.y, this.d + 1);
+        }
+
+        String key() {
+            return this.x + ":" + this.y;
+        }
     }
 }
