@@ -9,7 +9,7 @@ public class Puzzle__DAY__ extends Puzzle<Integer> {
     @Override
     public Integer solvePart1(String inputFile) {
         final var file = new File(inputFile);
-        var result = 0;
+        var result = -1;
         try (var it = FileUtils.lineIterator(file)) {
 
         } catch (Exception e) {
@@ -21,7 +21,7 @@ public class Puzzle__DAY__ extends Puzzle<Integer> {
     @Override
     protected Integer solvePart2(String inputFile) {
         final var file = new File(inputFile);
-        var result = 0;
+        var result = -1;
         try (var it = FileUtils.lineIterator(file)) {
 
         } catch (Exception e) {
