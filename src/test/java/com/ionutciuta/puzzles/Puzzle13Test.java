@@ -93,18 +93,20 @@ class Puzzle13Test implements PuzzleTest {
 
     @ParameterizedTest
     @MethodSource("ordered")
-    public void shouldBeInOrder(String l1, String l2) {
+    public void shouldBeInOrder(String l1, String l2, Puzzle13.Order order) {
         // [1,1,3,1,1]
         // [1,1,5,1,1]
         var n1 = puzzle.parse(l1);
         var n2 = puzzle.parse(l2);
 
-        assertTrue(puzzle.checkOrder(n1, n2));
+        assertEquals(order, puzzle.checkOrder(n1, n2));
     }
 
     public static Stream<Arguments> ordered() {
         return Stream.of(
-                Arguments.of("[[1],[2,3,4]]", "[[1],4]")
+//                Arguments.of("[[1],[2,3,4]]", "[[1],4]"),
+//                Arguments.of("[1,[2,[3,[4,[5,6,7]]]],8,9]", "[1,[2,[3,[4,[5,6,0]]]],8,9]", Puzzle13.Order.NOT_ORDERED)
+                Arguments.of("[[[]]]", "[[]]", Puzzle13.Order.NOT_ORDERED)
         );
     }
 }

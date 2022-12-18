@@ -26,7 +26,7 @@ public class Puzzle13 extends Puzzle<Integer> {
                     final var n2 = parse(secondPacket);
                     final var inOrder = checkOrder(n1, n2);
 
-                    if (inOrder) {
+                    if (inOrder != Order.NOT_ORDERED) {
                         result += pairIndex;
                     }
 
@@ -52,30 +52,53 @@ public class Puzzle13 extends Puzzle<Integer> {
         return result;
     }
 
-    boolean checkOrder(Node n1, Node n2) {
+    enum Order {
+        ORDERED, EQUAL, NOT_ORDERED
+    }
+
+    Order checkOrder(Node n1, Node n2) {
         if (n1.isValueNode() && n2.isValueNode()) {
-            return n1.value <= n2.value;
+            final var diff = n1.value - n2.value;
+            if (diff < 0) return Order.ORDERED;
+            if (diff == 0) return Order.EQUAL;
+            return Order.NOT_ORDERED;
         }
 
-        if (!n1.isValueNode() && !n2.isValueNode()) {
-            final var n1Size = n1.next.size();
-            final var n2Size = n2.next.size();
-            final var len = Math.min(n1Size, n2Size);
-            var ordered = true;
-            for (int i = 0; i < len; i++) {
-                ordered &= checkOrder(n1.next.get(i), n2.next.get(i));
-            }
-            if (n2Size < n1Size) {
-                ordered = false;
-            }
-            return ordered;
+        if (!n1.isValueNode() && n1.next.isEmpty()
+                && !n2.isValueNode() && n2.next.isEmpty()) {
+            return Order.EQUAL;
         }
 
-        if (n1.isValueNode()) {
+        if (n1.isValueNode() && !n2.isValueNode()) {
             return checkOrder(Node.listNode().addChild(n1), n2);
         }
 
-        return checkOrder(n1, Node.listNode().addChild(n2));
+        if (!n1.isValueNode() && n2.isValueNode()) {
+            return checkOrder(n1, Node.listNode().addChild(n2));
+        }
+
+        final var n1Size = n1.next.size();
+        final var n2Size = n2.next.size();
+        final var len = Math.min(n1Size, n2Size);
+
+
+        Order status = Order.EQUAL;
+        for (int i = 0; i < len; i++) {
+            status = checkOrder(n1.next.get(i), n2.next.get(i));
+            if (status == Order.NOT_ORDERED) {
+                return Order.NOT_ORDERED;
+            }
+        }
+
+        if (status == Order.EQUAL) {
+            if (n1Size > n2Size) {
+                return Order.NOT_ORDERED;
+            } else {
+                return Order.ORDERED;
+            }
+        }
+
+        return status;
     }
 
     @Override
