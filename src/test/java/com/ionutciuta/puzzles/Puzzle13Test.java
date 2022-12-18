@@ -1,9 +1,15 @@
 package com.ionutciuta.puzzles;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.stream.Stream;
 
 import static com.ionutciuta.puzzles.Puzzle13.Node;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class Puzzle13Test implements PuzzleTest {
     private final Puzzle13 puzzle = new Puzzle13();
@@ -83,5 +89,22 @@ class Puzzle13Test implements PuzzleTest {
         r = puzzle.parse("[1,[2,[3,[4,[5,6,0]]]],8,9]");
         System.out.println(r);
         assertEquals("[1,[2,[3,[4,[5,6,0]]]],8,9]", r.toString());
+    }
+
+    @ParameterizedTest
+    @MethodSource("ordered")
+    public void shouldBeInOrder(String l1, String l2) {
+        // [1,1,3,1,1]
+        // [1,1,5,1,1]
+        var n1 = puzzle.parse(l1);
+        var n2 = puzzle.parse(l2);
+
+        assertTrue(puzzle.checkOrder(n1, n2));
+    }
+
+    public static Stream<Arguments> ordered() {
+        return Stream.of(
+                Arguments.of("[[1],[2,3,4]]", "[[1],4]")
+        );
     }
 }

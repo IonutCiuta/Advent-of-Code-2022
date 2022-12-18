@@ -52,8 +52,30 @@ public class Puzzle13 extends Puzzle<Integer> {
         return result;
     }
 
-    private boolean checkOrder(Node n1, Node n2) {
-        return false;
+    boolean checkOrder(Node n1, Node n2) {
+        if (n1.isValueNode() && n2.isValueNode()) {
+            return n1.value <= n2.value;
+        }
+
+        if (!n1.isValueNode() && !n2.isValueNode()) {
+            final var n1Size = n1.next.size();
+            final var n2Size = n2.next.size();
+            final var len = Math.min(n1Size, n2Size);
+            var ordered = true;
+            for (int i = 0; i < len; i++) {
+                ordered &= checkOrder(n1.next.get(i), n2.next.get(i));
+            }
+            if (n2Size < n1Size) {
+                ordered = false;
+            }
+            return ordered;
+        }
+
+        if (n1.isValueNode()) {
+            return checkOrder(Node.listNode().addChild(n1), n2);
+        }
+
+        return checkOrder(n1, Node.listNode().addChild(n2));
     }
 
     @Override
@@ -74,7 +96,6 @@ public class Puzzle13 extends Puzzle<Integer> {
         return node;
     }
 
-    @SuppressWarnings("rawtypes")
     private void parseLine(char[] chars, int i, Node node) {
         if (i == chars.length) {
             return;
@@ -113,16 +134,8 @@ public class Puzzle13 extends Puzzle<Integer> {
             this.value = value;
         }
 
-        static Node valueNode(int value, Node parent) {
-            return new Node(parent, null, value);
-        }
-
         static Node valueNode(int value) {
             return new Node(null, null, value);
-        }
-
-        static Node listNode(Node parent) {
-            return new Node(parent, new ArrayList<>(), -1);
         }
 
         static Node listNode() {
